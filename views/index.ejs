@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <title></title>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <style>
+      input, textarea {
+        width: 100%;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.2/socket.io.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        var socket = io.connect();
+        var user = prompt('Username?');
+
+        socket.on('invalidUser', function(data) {
+          user = prompt('Username?');
+          socket.emit('user_send', {user: user});
+        })
+
+        console.log(user);
+
+
+        socket.emit('user_send', {user: user});
+
+        $('#send').click(function() {
+          socket.emit('message_send', {message: $('#chat').val()});
+          $('#chat').val('');
+        })
+
+        socket.on('message_receive', function(data) {
+          var log = '';
+          for (var i = 0; i < data.messages.length; i++) {
+            log = log + '<p>'+data.messages[i].user+': '+data.messages[i].message+'</p>';
+          }
+          $('#chatlog').html(log);
+        })
+
+        socket.on('user_receive', function(data) {
+          var users = '';
+          for (var i in data.users) {
+            users = users + '<p>'+data.users[i]+'</p>';
+          }
+          $('#peoplelog').html(users);
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="columns eight" id="chatlog">
+          Chat area
+        </div>
+        <div class="columns four" id="peoplelog">
+          People
+        </div>
+      </div>
+      <div class="row">
+        <div class="columns eight">
+          <textarea id="chat"></textarea>
+        </div>
+        <div class="columns four">
+          <input type="submit" value="Send" id="send">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
